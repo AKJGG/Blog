@@ -1,6 +1,5 @@
 export const useApi = (url: string, options: any = {}) => {
   const config = useRuntimeConfig()
-  const toast = useToast()
 
   // 1. 获取基础配置
   const apiBase = config.public.apiBase || 'http://localhost:8000/api/v1'

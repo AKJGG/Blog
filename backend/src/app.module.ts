@@ -6,74 +6,78 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-// 业务逻辑模块
+// 基础业务逻辑模块
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { BlogModule } from './blog/blog.module';
 import { UploadModule } from './upload/upload.module';
 import { MailModule } from './mail/mail.module';
 import { CommonModule } from './common/common.module';
+import { CommentModule } from './comment/comment.module';
+import { ActionModule } from './action/action.module';
 
-// 数据库实体
+// 你刚写完的四大核心业务模块 (1, 2, 3, 5)
+import { NotificationModule } from './notification/notification.module';
+import { FollowModule } from './follow/follow.module';
+import { StatisticsModule } from './statistics/statistics.module';
+import { SearchModule } from './search/search.module';
+
+// 核心数据库实体 (必须全部列出，否则 synchronize 无法自动建表)
 import { User } from './user/entities/user.entity';
 import { Blog } from './blog/entities/blog.entity';
+import { Follow } from './follow/entities/follow.entity';
+import { Notification } from './notification/entities/notification.entity';
+import { Action } from './action/entities/action.entity';
 
 @Module({
   imports: [
-    // 1. 加载环境变量，设置为全局可用
+    // 1. 加载环境变量
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env', // 强制只识别根目录下的 .env 文件
+      envFilePath: '.env', 
     }),
 
-    // 2. 动态数据库模块配置
+    // 2. 动态数据库模块配置 (支持本地与 Supabase 自动切换)
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService): TypeOrmModuleOptions => {
-        // --- 环境变量提取 ---
         const host = configService.get<string>('DB_HOST');
         const port = configService.get<number>('DB_PORT', 5432);
         const username = configService.get<string>('DB_USER');
         const password = configService.get<string>('DB_PASS');
         const database = configService.get<string>('DB_NAME');
         
-        // --- 核心识别逻辑：自动判定是否为远程/Supabase环境 ---
-        // 逻辑：如果 Host 包含 'supabase' 字符串，或者 NODE_ENV 不是 development
+        // 判定是否为远程/Supabase环境
         const isRemote = host?.includes('supabase') || configService.get('NODE_ENV') === 'production';
 
-        // --- 构建配置对象 ---
         const options: TypeOrmModuleOptions = {
           type: 'postgres',
-          host: host,
-          port: port,
-          username: username,
-          password: password,
-          database: database,
-          // 显式列出所有实体，确保 TypeORM 能正确扫描
+          host,
+          port,
+          username,
+          password,
+          database,
+          // 注册所有业务实体，确保 1, 3 模块的表能自动创建
           entities: [
             User, 
-            Blog
+            Blog,
+            Follow,
+            Notification,
+            Action
           ],
-          // 开发环境下自动同步数据库表结构 (非常方便但需谨慎)
+          // 保持开启，确保新模块字段（如统计用的 views）能同步到库
           synchronize: true,
-          // 自动负载平衡与连接池配置
           logging: configService.get('NODE_ENV') === 'development',
         };
 
-        // --- 自动注入 SSL 配置 ---
+        // 自动注入 SSL 配置以适配 Supabase
         if (isRemote) {
-          // 远程 PostgreSQL (如 Supabase) 强制要求 SSL 握手
           Object.assign(options, {
-            ssl: {
-              rejectUnauthorized: false, // 允许自签名证书，解决 Supabase 连接报错
-            },
+            ssl: { rejectUnauthorized: false },
           });
         } else {
-          // 本地环境直接关闭 SSL，提升连接速度
-          Object.assign(options, {
-            ssl: false,
-          });
+          Object.assign(options, { ssl: false });
         }
 
         return options;
@@ -87,12 +91,15 @@ import { Blog } from './blog/entities/blog.entity';
     BlogModule,
     UploadModule,
     MailModule,
+    CommentModule,
+    ActionModule,
+    NotificationModule,
+    FollowModule,
+    StatisticsModule,
+    SearchModule,
+    // RoleModule 已按要求移除
   ],
-  controllers: [
-    AppController
-  ],
-  providers: [
-    AppService
-  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
