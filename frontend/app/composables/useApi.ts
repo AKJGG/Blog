@@ -1,5 +1,9 @@
 export const useApi = (url: string, options: any = {}) => {
   const config = useRuntimeConfig()
+<<<<<<< HEAD
+=======
+  const toast = useToast()
+>>>>>>> 0a9e07517288c40498ce52e730672311e4fab14d
 
   // 1. 获取基础配置
   const apiBase = config.public.apiBase || 'http://localhost:8000/api/v1'
@@ -44,4 +48,8 @@ export const useApi = (url: string, options: any = {}) => {
   // 3. 合并参数并执行请求
   // 使用 $fetch 处理命令式请求 (onSubmit)，或配合 useAsyncData 使用
   return $fetch(url, { ...defaults, ...options })
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 0a9e07517288c40498ce52e730672311e4fab14d
