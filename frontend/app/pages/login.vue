@@ -47,7 +47,11 @@
           </UButton>
 
           <div class="text-sm text-center text-gray-400">
+<<<<<<< HEAD
             没有账号？<NuxtLink to="/register" class="text-[#4493f8] underline">去注册</NuxtLink>
+=======
+            没有账号？<NuxtLink to="/register" class="text-[#4493f8] underline">立即注册</NuxtLink>
+>>>>>>> 0a9e07517288c40498ce52e730672311e4fab14d
           </div>
         </div>
       </UForm>
@@ -60,7 +64,11 @@ interface LoginState { username?: string; password?: string }
 const state = reactive<LoginState>({ username: '', password: '' })
 const isPending = ref(false)
 const isVisible = ref(false)
+<<<<<<< HEAD
 const toast = useToast()
+=======
+const toast = Toast
+>>>>>>> 0a9e07517288c40498ce52e730672311e4fab14d
 const validate = (state: any) => {
   const errors = []
   if (!state.username) errors.push({ path: 'username', message: '必须填写' })
